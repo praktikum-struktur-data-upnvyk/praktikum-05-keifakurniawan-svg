@@ -2,27 +2,16 @@
 // student.cpp — Implementasi Mahasiswa
 // Pertemuan 5: Stack (Tumpukan) dengan Linked List
 // =============================================================================
-// FILE YANG BOLEH DIEDIT      : src/student.cpp  ← HANYA FILE INI
-// FILE YANG TIDAK BOLEH DIEDIT: src/student.h, tests/checker.cpp, tests/report.h
+// FILE YANG BOLEH DIEDIT       : src/student.cpp  ← HANYA FILE INI
+// FILE YANG TIDAK BOLEH DIEDIT : src/student.h, tests/checker.cpp, tests/report.h
 //
 // -----------------------------------------------------------------------------
 // DAFTAR PEKERJAAN DAN BOBOTNYA
 // -----------------------------------------------------------------------------
-//   Soal 1  push             perubahan dicatat ke puncak tumpukan     25 poin
-//   Soal 2  pop              Ctrl+Z membatalkan yang paling terakhir  30 poin
-//   Soal 3  clear            Ctrl+S membuang seluruh riwayat undo     20 poin
-//   Soal 4  kurungSeimbang   pemeriksa kurung pada kode               25 poin
-//
-// -----------------------------------------------------------------------------
-// SUDAH DISEDIAKAN, TIDAK DINILAI
-// -----------------------------------------------------------------------------
-//   inisialisasi   menyiapkan tumpukan baru menjadi kosong
-//   isEmpty        apakah tumpukannya sedang kosong
-//   peek           melihat puncak tanpa mengambilnya
-//   display        membaca seluruh isi tumpukan menjadi satu baris teks
-//
-//   Keempatnya ada di bagian bawah file ini, sudah ditulis lengkap. Pakai
-//   `display` sesering mungkin untuk memeriksa hasil kerja Anda sendiri.
+//   Soal 1  push            perubahan dicatat ke puncak tumpukan     25 poin
+//   Soal 2  pop             Ctrl+Z membatalkan yang paling terakhir  30 poin
+//   Soal 3  clear           Ctrl+S membuang seluruh riwayat undo     20 poin
+//   Soal 4  kurungSeimbang  pemeriksa kurung pada kode               25 poin
 //
 // -----------------------------------------------------------------------------
 
@@ -37,11 +26,6 @@ using namespace std;
 // =============================================================================
 // SUDAH DISEDIAKAN — TIDAK DINILAI, TIDAK PERLU DIUBAH
 // =============================================================================
-// Keempat fungsi di bawah sudah ditulis lengkap.
-//
-// `peek` sengaja disediakan sebagai PEMBANDING untuk Soal 2. Perhatikan
-// bentuknya baik-baik: `pop` yang Anda kerjakan punya kerangka yang sama
-// persis, hanya saja ia juga memindahkan `s.top` dan membuang node-nya.
 
 void inisialisasi(Stack& s) {
     s.top = nullptr;
@@ -71,32 +55,47 @@ string display(Stack& s) {
 
 // SOAL 1
 bool push(Stack& s, int nilai) {
+    // Membuat node baru untuk menyimpan data
     Node* nodeBaru = new Node;
     nodeBaru->data = nilai;
+    
+    // Menyambungkan node baru ke puncak stack saat ini (walaupun s.top adalah nullptr)
     nodeBaru->next = s.top;
+    
+    // Menjadikan node baru sebagai puncak yang baru
     s.top = nodeBaru;
     
-    return false;
+    return true; // Selalu berhasil selama alokasi memori berhasil
 }
 
 // SOAL 2
 bool pop(Stack& s, int& nilai) {
+    // Underflow: tidak ada node yang bisa diambil
     if (s.top == nullptr) {
         return false;
     }
     
+    // Menyimpan pointer ke node puncak yang akan dihapus
     Node* nodeHapus = s.top;
+    
+    // Membaca nilai dari node puncak dan menyimpannya di parameter keluaran
     nilai = nodeHapus->data;
+    
+    // Memindahkan top ke node di bawahnya
     s.top = nodeHapus->next;
+    
+    // Membuang node yang tidak terpakai dari memori
     delete nodeHapus;
-    return false;
+    
+    return true;
 }
 
 // SOAL 3
 void clear(Stack& s) {
-     while (s.top != nullptr) {
+    // Terus keluarkan elemen sampai top mencapai nullptr
+    while (s.top != nullptr) {
         Node* nodeHapus = s.top;
-        s.top = nodeHapus->next;
+        s.top = nodeHapus->next; // Simpan alamat next sebelum mendelete node
         delete nodeHapus;
     }
 }
@@ -105,53 +104,42 @@ void clear(Stack& s) {
 bool kurungSeimbang(const string& ekspresi) {
     Stack s;
     inisialisasi(s);
+    
     for (char c : ekspresi) {
+        // Jika menemukan tanda buka, masukkan ke stack
         if (c == '(' || c == '[' || c == '{') {
             push(s, c);
         } 
+        // Jika menemukan tanda tutup, periksa kecocokannya dengan yang di puncak
         else if (c == ')' || c == ']' || c == '}') {
             int nilaiBuka;
             
+            // Jika stack sudah kosong namun masih ada tutup, tidak seimbang
             if (!pop(s, nilaiBuka)) {
-                clear(s);
+                clear(s); // Pastikan tidak ada bocor (meski kosong untuk amannya)
                 return false;
             }
             
             char kurungBuka = (char)nilaiBuka;
+            
+            // Periksa apakah jenis kurungnya cocok
             if ((c == ')' && kurungBuka != '(') ||
                 (c == ']' && kurungBuka != '[') ||
                 (c == '}' && kurungBuka != '{')) {
+                clear(s); // Jangan lupa buang sisa stack jika belum kosong
                 return false;
             }
         }
     }
     
+    // Harus dipastikan bahwa seluruh kurung buka sudah ditutup (stack kosong)
     bool apakahSeimbang = isEmpty(s);
+    clear(s); // Bereskan sisa elemen yang mungkin tertinggal (untuk mencegah memory leak)
     return apakahSeimbang;
 }
 
 // =============================================================================
 // MAIN() — memeragakan sesi mengetik. TIDAK dinilai, bebas diubah.
-// =============================================================================
-// Di bawah ini file ini menjadi program C++ biasa. Tekan Run di VS Code, atau
-// jalankan lewat terminal:
-//
-//     g++ -std=c++17 src/student.cpp -o latihan
-//     ./latihan
-//
-// Isinya menjalankan sesi mengetik di Tulis secara berurutan, dan menampilkan
-// hasil tiap langkah berdampingan dengan jawaban yang benar — sehingga Anda
-// bisa langsung membandingkan.
-//
-// SATU ATURAN YANG TIDAK BOLEH DILANGGAR
-// --------------------------------------
-// cin hanya boleh dipakai DI DALAM main() ini. JANGAN menaruh cin di dalam
-// keempat fungsi yang dinilai. Saat menilai, checker memanggil fungsi-fungsi
-// itu tanpa memberi masukan apa pun, jadi cin di sana akan membaca sampah — dan
-// nilai Anda berubah-ubah setiap kali dinilai, dari kode yang sama persis.
-//
-// (Baris #ifndef di bawah hanya urusan teknis: saat menilai, checker memakai
-//  main() miliknya sendiri, jadi main() Anda dilewati supaya tidak bentrok.)
 // =============================================================================
 
 #ifndef ADA_MAIN_LAIN
@@ -253,15 +241,6 @@ int main() {
         cout << " -> " << benarSalah(kurungSeimbang(contoh[i])) << "\n";
     }
     cout << "\n    Yang benar: true, true, true, false, false, false\n";
-
-    // -------------------------------------------------------------------------
-    // Mau mencoba dengan teks yang Anda ketik sendiri? Hapus tanda // di bawah
-    // ini, lalu jalankan lagi.
-    // -------------------------------------------------------------------------
-    // cout << "\nKetik satu ekspresi: ";
-    // string punyaAnda;
-    // getline(cin, punyaAnda);
-    // cout << "seimbang? " << benarSalah(kurungSeimbang(punyaAnda)) << endl;
 
     clear(s);
 
